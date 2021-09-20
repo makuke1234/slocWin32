@@ -10,6 +10,11 @@ the percentage of code written in a particular language.
 The x64 Windows binary can be obtained [here](https://github.com/makuke1234/slocWin32/raw/master/sloc.exe).
 
 
+# Usage
+
+... soon
+
+
 # License
 
 This repo uses the MIT License.
