@@ -1,5 +1,5 @@
 CC=gcc
-CDEFFLAGS=-std=c17 -Wall -Wextra -Wpedantic -Wconversion -D UNICODE -D _UNICODE
+CDEFFLAGS=-std=c17 -Wall -Wextra -Wpedantic -Wconversion
 CFLAGS=-O3 -Wl,--strip-all,--build-id=none,--gc-sections -fno-ident -D NDEBUG
 CDEBFLAGS=-g -O0 -D _DEBUG
 
