@@ -41,7 +41,16 @@ size_t sloc_countLineUntilNotWhitespace(const char * code, size_t n_code)
 
 static inline size_t sloc_countLine_Asm(const char * code, size_t n_code)
 {
-	return sloc_countLine(code, n_code);
+	size_t ff = 0;
+	for (; ff < n_code;)
+	{
+		ff += sloc_countLineUntilNotWhitespace(code + ff, n_code - ff);
+		if (code[ff] == '\'')
+			ff += sloc_countLine(code + ff, n_code - ff);
+		else
+			return ff + sloc_countLine(code + ff, n_code - ff);
+	}
+	return ff;
 }
 static inline size_t sloc_countLine_C(const char * code, size_t n_code)
 {
@@ -77,11 +86,6 @@ static inline size_t sloc_countLine_C(const char * code, size_t n_code)
 	
 	return ff;
 }
-static inline size_t sloc_countLine_Cpp(const char * code, size_t n_code)
-{
-
-	return sloc_countLine(code, n_code);
-}
 
 const sloc_language_t sloc_langExtensions[sloc_num_of_languages] = {
 	[sloc_Assembly]     = {
@@ -91,7 +95,8 @@ const sloc_language_t sloc_langExtensions[sloc_num_of_languages] = {
 	},
 	[sloc_B]            = {
 		.name = "B",
-		.ext  = "*.b"
+		.ext  = "*.b",
+		.fid  = &sloc_countLine_C
 	},
 	[sloc_C]            = {
 		.name = "C",
@@ -100,12 +105,13 @@ const sloc_language_t sloc_langExtensions[sloc_num_of_languages] = {
 	},
 	[sloc_Csharp]       = {
 		.name = "C#",
-		.ext  = "*.cs;*.csx"
+		.ext  = "*.cs;*.csx",
+		.fid  = &sloc_countLine_C
 	},
 	[sloc_Cpp]          = {
 		.name = "C++",
 		.ext  = "*.C;*.cc;*.cpp;*.cxx;*.c++;*.H;*.hh;*.hpp;*.hxx;*.h++",
-		.fid  = &sloc_countLine_Cpp
+		.fid  = &sloc_countLine_C
 	},
 	[sloc_CMake]        = {
 		.name = "CMake",
@@ -117,11 +123,13 @@ const sloc_language_t sloc_langExtensions[sloc_num_of_languages] = {
 	},
 	[sloc_D]            = {
 		.name = "D",
-		.ext  = "*.d"
+		.ext  = "*.d",
+		.fid  = &sloc_countLine_C
 	},
 	[sloc_Go]           = {
 		.name = "Go",
-		.ext  = "*.go"
+		.ext  = "*.go",
+		.fid  = &sloc_countLine_C
 	},
 	[sloc_HTML]         = {
 		.name = "HTML",
@@ -129,7 +137,8 @@ const sloc_language_t sloc_langExtensions[sloc_num_of_languages] = {
 	},
 	[sloc_Java]         = {
 		.name = "Java",
-		.ext  = "*.java"
+		.ext  = "*.java",
+		.fid  = &sloc_countLine_C
 	},
 	[sloc_JavaScript]   = {
 		.name = "JavaScript",
@@ -169,7 +178,8 @@ const sloc_language_t sloc_langExtensions[sloc_num_of_languages] = {
 	},
 	[sloc_ResourceFile] = {
 		.name = "Windows Resource File",
-		.ext  = "*.rc;*.RC"
+		.ext  = "*.rc;*.RC",
+		.fid  = &sloc_countLine_C
 	},
 	[sloc_Ruby]         = {
 		.name = "Ruby",
