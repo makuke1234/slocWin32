@@ -77,20 +77,33 @@ typedef struct sloc_sourcefile
 	char * path;
 	size_t sloc;
 } sloc_sourcefile_t;
-
 int sloc_sourcefile_comp(const void * a, const void * b);
+
+typedef struct sloc_langStat
+{
+	const sloc_language_t * lang;
+	size_t sloc;
+} sloc_langStat_t;
+
+int sloc_langStat_comp(const void * a, const void * b);
 
 typedef struct sloc_sfs
 {
 	sloc_sourcefile_t * files;
 	size_t n_files, cap;
+
+	sloc_langStat_t langStats[sloc_num_of_languages];
+
+	size_t slocTotal;
 } sloc_sfs_t;
 
 extern sloc_sfs_t sloc_sourceFiles;
 
 bool sloc_sfs_addFilesFromDir(sloc_sfs_t * files, const char * path);
 bool sloc_sfs_add(sloc_sfs_t * files, sloc_sourcefile_t sourceFile);
-void sloc_sfs_qsort(sloc_sfs_t * files);
+void sloc_sfs_makeLangStats(sloc_sfs_t * files);
+void sloc_sfs_qsortFiles(sloc_sfs_t * files);
+void sloc_sfs_qsortLangStats(sloc_sfs_t * files);
 void sloc_sfs_clear(sloc_sfs_t * files);
 
 #endif

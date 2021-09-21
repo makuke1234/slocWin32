@@ -626,6 +626,10 @@ int sloc_sourcefile_comp(const void * a, const void * b)
 {
 	return ((const sloc_sourcefile_t *)a)->sloc > ((const sloc_sourcefile_t *)b)->sloc;
 }
+int sloc_langStat_comp(const void * a, const void * b)
+{
+	return ((const sloc_langStat_t *)a)->sloc > ((const sloc_langStat_t *)b)->sloc;
+}
 
 sloc_sfs_t sloc_sourceFiles;
 
@@ -688,9 +692,32 @@ bool sloc_sfs_add(sloc_sfs_t * files, sloc_sourcefile_t sourceFile)
 
 	return true;
 }
-void sloc_sfs_qsort(sloc_sfs_t * files)
+void sloc_sfs_makeLangStats(sloc_sfs_t * files)
+{
+	memset(files->langStats, 0, sloc_num_of_languages * sizeof(sloc_langStat_t));
+
+	files->slocTotal = 0;
+	for (size_t i = 0; i < files->n_files; ++i)
+	{
+		sloc_sourcefile_t * file = &files->files[i];
+		if (file->lang != &sloc_langExtOther)
+		{
+			intptr_t index = file->lang - sloc_langExtensions;
+			if (files->langStats[index].lang == NULL)
+				files->langStats[index].lang = &sloc_langExtensions[index];
+
+			files->langStats[index].sloc += file->sloc;
+			files->slocTotal += file->sloc;
+		}
+	}
+}
+void sloc_sfs_qsortFiles(sloc_sfs_t * files)
 {
 	qsort(files->files, files->n_files, sizeof(sloc_sourcefile_t), &sloc_sourcefile_comp);
+}
+void sloc_sfs_qsortLangStats(sloc_sfs_t * files)
+{
+	qsort(files->langStats, sloc_num_of_languages, sizeof(sloc_langStat_t), &sloc_langStat_comp);
 }
 void sloc_sfs_clear(sloc_sfs_t * files)
 {

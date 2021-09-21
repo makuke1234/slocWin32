@@ -65,7 +65,10 @@ int main(int argc, char * argv[])
 			// Close file
 			CloseHandle(hFile);
 		}
-		sloc_sfs_qsort(&sloc_sourceFiles);
+		sloc_sfs_qsortFiles(&sloc_sourceFiles);
+
+		sloc_sfs_makeLangStats(&sloc_sourceFiles);
+		sloc_sfs_qsortLangStats(&sloc_sourceFiles);
 
 		printf("Files from %s\n", path);
 		for (size_t i = 0; i < sloc_sourceFiles.n_files; ++i)
@@ -73,6 +76,19 @@ int main(int argc, char * argv[])
 			sloc_sourcefile_t * file = &sloc_sourceFiles.files[i];
 			printf("%s [%s]: %zu sloc\n", file->path, file->lang->name, file->sloc);
 		}
+
+		
+		printf("By language:\n");
+		for (size_t i = 0; i < sloc_num_of_languages; ++i)
+		{
+			sloc_langStat_t * langStat = &sloc_sourceFiles.langStats[i];
+			if (langStat->lang == NULL)
+				continue;
+			
+			int percent = (int)(((size_t)10000 * langStat->sloc) / sloc_sourceFiles.slocTotal);
+			printf("[%s]: %zu sloc -> %d.%d%%\n", langStat->lang->name, langStat->sloc, percent / 100, percent % 100);
+		}
+
 		putchar('\n');
 
 		// Clear contents
