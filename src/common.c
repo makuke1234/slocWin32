@@ -624,11 +624,13 @@ size_t sloc_countSloc(const char * fileContents, size_t n_fileContents, const sl
 
 int sloc_sourcefile_comp(const void * a, const void * b)
 {
-	return ((const sloc_sourcefile_t *)a)->sloc > ((const sloc_sourcefile_t *)b)->sloc;
+	const size_t va = ((const sloc_sourcefile_t *)a)->sloc, vb = ((const sloc_sourcefile_t *)b)->sloc;
+	return -1 * (vb < va) + (va < vb);
 }
 int sloc_langStat_comp(const void * a, const void * b)
 {
-	return ((const sloc_langStat_t *)a)->sloc > ((const sloc_langStat_t *)b)->sloc;
+	const size_t va = ((const sloc_langStat_t *)a)->sloc, vb = ((const sloc_langStat_t *)b)->sloc;
+	return -1 * (vb < va) + (va < vb);
 }
 
 sloc_sfs_t sloc_sourceFiles;
