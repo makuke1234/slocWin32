@@ -45,10 +45,14 @@ static inline size_t sloc_countLine_Asm(const char * code, size_t n_code)
 	for (; ff < n_code;)
 	{
 		ff += sloc_countLineUntilNotWhitespace(code + ff, n_code - ff);
-		if (code[ff] == '\'')
+		switch (code[ff])
+		{
+		case ';':
 			ff += sloc_countLine(code + ff, n_code - ff);
-		else
+			break;
+		default:
 			return ff + sloc_countLine(code + ff, n_code - ff);
+		}
 	}
 	return ff;
 }
@@ -64,7 +68,9 @@ static inline size_t sloc_countLine_C(const char * code, size_t n_code)
 			if (ff < (n_code - 1))
 			{
 				if (code[ff + 1] == '/')
+				{
 					ff += sloc_countLine(code + ff, n_code - ff);
+				}
 				else if (code[ff + 1] == '*')
 				{
 					// search "*/" part
@@ -74,8 +80,6 @@ static inline size_t sloc_countLine_C(const char * code, size_t n_code)
 							break;
 					}
 				}
-				else
-					return ff + sloc_countLine(code + ff, n_code - ff);
 			}
 			
 			break;
@@ -86,6 +90,296 @@ static inline size_t sloc_countLine_C(const char * code, size_t n_code)
 	
 	return ff;
 }
+static inline size_t sloc_countLine_CMake(const char * code, size_t n_code)
+{
+	size_t ff = 0;
+	for (; ff < n_code;)
+	{
+		ff += sloc_countLineUntilNotWhitespace(code + ff, n_code - ff);
+		switch (code[ff])
+		{
+		case '#':
+			ff += sloc_countLine(code + ff, n_code - ff);
+			break;
+		default:
+			return ff + sloc_countLine(code + ff, n_code - ff);
+		}
+	}
+	
+	return ff;
+}
+static inline size_t sloc_countLine_CSS(const char * code, size_t n_code)
+{
+	size_t ff = 0;
+	for (; ff < n_code;)
+	{
+		ff += sloc_countLineUntilNotWhitespace(code + ff, n_code - ff);
+		switch (code[ff])
+		{
+		case '/':
+			if (ff < (n_code - 1))
+			{
+				if (code[ff + 1] == '*')
+				{
+					// search "*/" part
+					for (; ff < (n_code - 1); ++ff)
+					{
+						if (code[ff] == '*' && code[ff + 1] == '/')
+							break;
+					}
+					break;
+				}
+			}
+			
+			break;
+		default:
+			return ff + sloc_countLine(code + ff, n_code - ff);
+		}
+	}
+	
+	return ff;
+}
+static inline size_t sloc_countLine_HTML(const char * code, size_t n_code)
+{
+	size_t ff = 0;
+	for (; ff < n_code;)
+	{
+		ff += sloc_countLineUntilNotWhitespace(code + ff, n_code - ff);
+		switch (code[ff])
+		{
+		case '<':
+			if (ff < (n_code - 3))
+			{
+				if (code[ff + 1] == '!' && code[ff + 2] == '-' && code[ff + 3] == '-')
+				{
+					// search "*/" part
+					for (; ff < (n_code - 2); ++ff)
+					{
+						if (code[ff] == '-' && code[ff + 1] == '-' && code[ff + 2] == '>')
+							break;
+					}
+					break;
+				}
+			}
+			
+			break;
+		default:
+			return ff + sloc_countLine(code + ff, n_code - ff);
+		}
+	}
+	
+	return ff;
+}
+static inline size_t sloc_countLine_Lua(const char * code, size_t n_code)
+{
+	size_t ff = 0;
+	for (; ff < n_code;)
+	{
+		ff += sloc_countLineUntilNotWhitespace(code + ff, n_code - ff);
+		switch (code[ff])
+		{
+		case '-':
+			if (ff < (n_code - 1) && code[ff + 1] == '-')
+			{
+				if (ff < (n_code - 3) && code[ff + 2] == '[' && code[ff + 3] == '[')
+				{
+					for (; ff < (n_code - 1); ++ff)
+					{
+						if (code[ff] == ']' && code[ff + 1] == ']')
+							break;
+					}
+				}
+				else
+					ff += sloc_countLine(code + ff, n_code - ff);
+			}
+			break;
+		default:
+			return ff + sloc_countLine(code + ff, n_code - ff);
+		}
+	}
+	
+	return ff;
+}
+static inline size_t sloc_countLine_Nim(const char * code, size_t n_code)
+{
+	size_t ff = 0;
+	for (; ff < n_code;)
+	{
+		ff += sloc_countLineUntilNotWhitespace(code + ff, n_code - ff);
+		switch (code[ff])
+		{
+		case '#':
+			if (ff < (n_code - 1) && code[ff + 1] == '[')
+			{
+				for (; ff < (n_code - 1); ++ff)
+				{
+					if (code[ff] == ']' && code[ff + 1] == '#')
+						break;
+				}
+			}
+			else
+				ff += sloc_countLine(code + ff, n_code - ff);
+			break;
+		default:
+			return ff + sloc_countLine(code + ff, n_code - ff);
+		}
+	}
+	
+	return ff;
+}
+static inline size_t sloc_countLine_PHP(const char * code, size_t n_code)
+{
+	size_t ff = 0;
+	for (; ff < n_code;)
+	{
+		ff += sloc_countLineUntilNotWhitespace(code + ff, n_code - ff);
+		switch (code[ff])
+		{
+		case '/':
+			if (ff < (n_code - 1))
+			{
+				if (code[ff + 1] == '/')
+				{
+					ff += sloc_countLine(code + ff, n_code - ff);
+					break;
+				}
+				else if (code[ff + 1] == '*')
+				{
+					// search "*/" part
+					for (; ff < (n_code - 1); ++ff)
+					{
+						if (code[ff] == '*' && code[ff + 1] == '/')
+							break;
+					}
+					break;
+				}
+			}
+			
+			break;
+		case '#':
+			for (; ff < n_code; ++ff)
+			{
+				if (code[ff] == ';' || code[ff] == '\n')
+					break;
+			}
+			break;
+		default:
+			return ff + sloc_countLine(code + ff, n_code - ff);
+		}
+	}
+	
+	return ff;
+}
+static inline size_t sloc_countLine_Python(const char * code, size_t n_code)
+{
+	size_t ff = 0;
+	for (; ff < n_code;)
+	{
+		ff += sloc_countLineUntilNotWhitespace(code + ff, n_code - ff);
+		switch (code[ff])
+		{
+		case '#':
+			ff += sloc_countLine(code + ff, n_code - ff);
+			break;
+		case '"':
+			if (ff < (n_code - 2))
+			{
+				if (code[ff + 1] == '"' && code[ff + 2] == '"')
+				{
+					// Search for """ part
+					for (; ff < (n_code - 2); ++ff)
+					{
+						if (code[ff] == '"' && code[ff + 1] == '"' && code[ff + 2] == '"')
+							break;
+					}
+					break;
+				}
+			}
+			break;
+		default:
+			return ff + sloc_countLine(code + ff, n_code - ff);
+		}
+	}
+	
+	return ff;
+}
+static inline size_t sloc_countLine_Ruby(const char * code, size_t n_code)
+{
+	size_t ff = 0;
+	for (; ff < n_code;)
+	{
+		ff += sloc_countLineUntilNotWhitespace(code + ff, n_code - ff);
+		switch (code[ff])
+		{
+		case '#':
+			ff += sloc_countLine(code + ff, n_code - ff);
+			break;
+		case '=':
+			if (ff < (n_code - 5))
+			{
+				if (code[ff + 1] == 'b' && code[ff + 2] == 'e' && code[ff + 3] == 'g' && code[ff + 4] == 'i' && code[ff + 5] == 'n')
+				{
+					// Search for "=end" part
+					for (; ff < (n_code - 5); ++ff)
+					{
+						if (code[ff] == '=' && code[ff + 1] == 'e' && code[ff + 2] == 'n' && code[ff + 3] == 'd')
+							break;
+					}
+					break;
+				}
+			}
+			break;
+		default:
+			return ff + sloc_countLine(code + ff, n_code - ff);
+		}
+	}
+	
+	return ff;
+}
+static inline size_t sloc_countLine_VB(const char * code, size_t n_code)
+{
+	size_t ff = 0;
+	for (; ff < n_code;)
+	{
+		ff += sloc_countLineUntilNotWhitespace(code + ff, n_code - ff);
+		switch (code[ff])
+		{
+		case '\'':
+			ff += sloc_countLine(code + ff, n_code - ff);
+			break;
+		default:
+			return ff + sloc_countLine(code + ff, n_code - ff);
+		}
+	}
+	
+	return ff;
+}
+static inline size_t sloc_countLine_VBScript(const char * code, size_t n_code)
+{
+	size_t ff = 0;
+	for (; ff < n_code;)
+	{
+		ff += sloc_countLineUntilNotWhitespace(code + ff, n_code - ff);
+		switch (code[ff])
+		{
+		case 'R':
+			if (ff < (n_code - 3) && code[ff + 1] == 'e' && code[ff + 2] == 'm' && code[ff + 3] == ' ')
+			{
+				[[fallthrough]];
+			}
+			else
+				break;
+		case '\'':
+			ff += sloc_countLine(code + ff, n_code - ff);
+			break;
+		default:
+			return ff + sloc_countLine(code + ff, n_code - ff);
+		}
+	}
+	
+	return ff;
+}
+
 
 const sloc_language_t sloc_langExtensions[sloc_num_of_languages] = {
 	[sloc_Assembly]     = {
@@ -115,11 +409,13 @@ const sloc_language_t sloc_langExtensions[sloc_num_of_languages] = {
 	},
 	[sloc_CMake]        = {
 		.name = "CMake",
-		.ext  = "CMakeLists.txt;*.cmake"
+		.ext  = "CMakeLists.txt;*.cmake",
+		.fid  = &sloc_countLine_CMake
 	},
 	[sloc_CSS]          = {
 		.name = "CSS",
-		.ext  = "*.css"
+		.ext  = "*.css",
+		.fid  = &sloc_countLine_CSS
 	},
 	[sloc_D]            = {
 		.name = "D",
@@ -133,7 +429,8 @@ const sloc_language_t sloc_langExtensions[sloc_num_of_languages] = {
 	},
 	[sloc_HTML]         = {
 		.name = "HTML",
-		.ext  = "*.html;*.htm"
+		.ext  = "*.html;*.htm",
+		.fid  = &sloc_countLine_HTML
 	},
 	[sloc_Java]         = {
 		.name = "Java",
@@ -142,27 +439,37 @@ const sloc_language_t sloc_langExtensions[sloc_num_of_languages] = {
 	},
 	[sloc_JavaScript]   = {
 		.name = "JavaScript",
-		.ext  = "*.js;*.cjs;*.mjs"
+		.ext  = "*.js;*.cjs;*.mjs",
+		.fid  = &sloc_countLine_C
 	},
 	[sloc_JSON]         = {
 		.name = "JSON",
 		.ext  = "*.json"
 	},
+	[sloc_JSONC]       = {
+		.name = "JSON with comments",
+		.ext  = "*.jsonc",
+		.fid  = &sloc_countLine_C
+	},
 	[sloc_Lua]          = {
 		.name = "Lua",
-		.ext  = "*.lua"
+		.ext  = "*.lua",
+		.fid  = &sloc_countLine_Lua
 	},
 	[sloc_Makefile]     = {
 		.name = "Makefile",
-		.ext  = "makefile;GNUmakefile;Makefile"
+		.ext  = "makefile;GNUmakefile;Makefile",
+		.fid  = &sloc_countLine_CMake
 	},
 	[sloc_Nim]          = {
 		.name = "Nim",
-		.ext  = "*.nim;*.nims;*.nimble"
+		.ext  = "*.nim;*.nims;*.nimble",
+		.fid  = &sloc_countLine_Nim
 	},
 	[sloc_PHP]          = {
 		.name = "PHP",
-		.ext  = "*.php;*.phar;*.phtml;*.pht;*.phps"
+		.ext  = "*.php;*.phar;*.phtml;*.pht;*.phps",
+		.fid  = &sloc_countLine_PHP
 	},
 	[sloc_PowerShell]   = {
 		.name = "PowerShell",
@@ -170,11 +477,13 @@ const sloc_language_t sloc_langExtensions[sloc_num_of_languages] = {
 	},
 	[sloc_Python]       = {
 		.name = "Python",
-		.ext  = "*.py;*.py3;*.pyw;*.pyx"
+		.ext  = "*.py;*.py3;*.pyw;*.pyx",
+		.fid  = &sloc_countLine_Python
 	},
 	[sloc_R]            = {
 		.name = "R",
-		.ext  = "*.r;*.rdata;*.rds;*.rda"
+		.ext  = "*.r;*.rdata;*.rds;*.rda",
+		.fid  = &sloc_countLine_CMake
 	},
 	[sloc_ResourceFile] = {
 		.name = "Windows Resource File",
@@ -183,11 +492,13 @@ const sloc_language_t sloc_langExtensions[sloc_num_of_languages] = {
 	},
 	[sloc_Ruby]         = {
 		.name = "Ruby",
-		.ext  = "*.rb"
+		.ext  = "*.rb",
+		.fid  = &sloc_countLine_Ruby
 	},
 	[sloc_Rust]         = {
 		.name = "Rust",
-		.ext  = "*.rs;*.rlib"
+		.ext  = "*.rs;*.rlib",
+		.fid  = &sloc_countLine_C
 	},
 	[sloc_Shell]        = {
 		.name = "Shell",
@@ -195,27 +506,33 @@ const sloc_language_t sloc_langExtensions[sloc_num_of_languages] = {
 	},
 	[sloc_VBScript]     = {
 		.name = "VBScript",
-		.ext  = "*.vbs"
+		.ext  = "*.vbs",
+		.fid  = &sloc_countLine_VBScript
 	},
 	[sloc_VisualBasic]  = {
 		.name = "Visual Basic",
-		.ext  = "*.vb"
+		.ext  = "*.vb",
+		.fid  = &sloc_countLine_VB
 	},
 	[sloc_XAML]         = {
 		.name = "XAML",
-		.ext  = "*.xaml"
+		.ext  = "*.xaml",
+		.fid  = &sloc_countLine_HTML
 	},
 	[sloc_XML]          = {
 		.name = "XML",
-		.ext  = "*.xml"
+		.ext  = "*.xml",
+		.fid  = &sloc_countLine_HTML
 	},
 	[sloc_YAML]         = {
 		.name = "YAML",
-		.ext  = "*.yaml;*.yml"
+		.ext  = "*.yaml;*.yml",
+		.fid  = &sloc_countLine_CMake
 	},
 	[sloc_Zig]          = {
 		.name = "Zig",
-		.ext  = "*.zig;*.zir"
+		.ext  = "*.zig;*.zir",
+		.fid  = &sloc_countLine_C
 	}
 };
 

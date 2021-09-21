@@ -29,6 +29,7 @@ enum sloc_languages
 	sloc_Java,
 	sloc_JavaScript,
 	sloc_JSON,
+	sloc_JSONC,
 	sloc_Lua,
 	sloc_Makefile,
 	sloc_Nim,
