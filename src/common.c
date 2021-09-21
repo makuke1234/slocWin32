@@ -270,6 +270,36 @@ static inline size_t sloc_countLine_PHP(const char * code, size_t n_code)
 	
 	return ff;
 }
+static inline size_t sloc_countLine_PS(const char * code, size_t n_code)
+{
+	size_t ff = 0;
+	for (; ff < n_code;)
+	{
+		ff += sloc_countLineUntilNotWhitespace(code + ff, n_code - ff);
+		switch (code[ff])
+		{
+		case '#':
+			ff += sloc_countLine(code + ff, n_code - ff);
+			break;
+		case '<':
+			if (ff < (n_code - 1) && code[ff + 1] == '#')
+			{
+				++ff;
+				// Search for "#>" part
+				for (; ff < (n_code - 1); ++ff)
+				{
+					if (code[ff] == '#' && code[ff + 1] == '>')
+						break;
+				}
+			}
+			break;
+		default:
+			return ff + sloc_countLine(code + ff, n_code - ff);
+		}
+	}
+	
+	return ff;
+}
 static inline size_t sloc_countLine_Python(const char * code, size_t n_code)
 {
 	size_t ff = 0;
@@ -292,7 +322,6 @@ static inline size_t sloc_countLine_Python(const char * code, size_t n_code)
 						if (code[ff] == '"' && code[ff + 1] == '"' && code[ff + 2] == '"')
 							break;
 					}
-					break;
 				}
 			}
 			break;
@@ -473,7 +502,8 @@ const sloc_language_t sloc_langExtensions[sloc_num_of_languages] = {
 	},
 	[sloc_PowerShell]   = {
 		.name = "PowerShell",
-		.ext  = "*.ps1;*.ps1xml;*.psc1;*.psd1;*.psm1;*.pssc;*.psrc;*.cdxml"
+		.ext  = "*.ps1;*.ps1xml;*.psc1;*.psd1;*.psm1;*.pssc;*.psrc;*.cdxml",
+		.fid  = &sloc_countLine_PS
 	},
 	[sloc_Python]       = {
 		.name = "Python",
