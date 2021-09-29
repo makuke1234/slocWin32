@@ -1,8 +1,8 @@
 # slocWin32
 ![Release version](https://img.shields.io/badge/release-v1.0.0-green.svg)
 
-A fast tool to count sloc in a folder, categorising all source files and giving
-the percentage of code written in a particular language.
+A fast tool to count the sloc in any folder, categorising all source files by
+language and giving the percentage of code written in that particular language.
 
 
 # Obtaining
