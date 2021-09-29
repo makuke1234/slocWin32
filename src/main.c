@@ -11,22 +11,25 @@ int main(int argc, char * argv[])
 		argv = otherArgv;
 	}
 
+
+	SlocStat_t langStatistics = { 0 };
+
 	for (int i = 1; i < argc; ++i)
 	{
 		const char * path = argv[i];
-		if (!sloc_sfs_addFilesFromDir(&sloc_sourceFiles, path))
+		if (!SlocStat_addFilesFromDir(&langStatistics, path))
 			return -1;
 		
-		for (size_t i = 0; i < sloc_sourceFiles.n_files; ++i)
+		for (size_t i = 0; i < langStatistics.n_files; ++i)
 		{
-			sloc_sourcefile_t * file = &sloc_sourceFiles.files[i];
+			SlocSourceFileStat_t * file = &langStatistics.files[i];
 			size_t i = strnlen(file->path, MAX_PATH);
 			for (; i > 0; --i)
 			{
 				if (file->path[i - 1] == '\\')
 					break;
 			}
-			file->lang = sloc_matchLang(file->path + i, 0);
+			file->lang = SlocLang_match(file->path + i, 0);
 			// Load one file contents
 			
 			HANDLE hFile = CreateFileA(
@@ -57,7 +60,7 @@ int main(int argc, char * argv[])
 				DWORD bytesRead;
 				if (ReadFile(hFile, fileContents, fileSize, &bytesRead, NULL))
 				{
-					file->sloc = sloc_countSloc(fileContents, bytesRead, file->lang);
+					file->sloc = sloc_countSLOC(fileContents, bytesRead, file->lang);
 				}
 				free(fileContents);
 			}
@@ -65,15 +68,15 @@ int main(int argc, char * argv[])
 			// Close file
 			CloseHandle(hFile);
 		}
-		sloc_sfs_qsortFiles(&sloc_sourceFiles);
+		SlocStat_qsortFiles(&langStatistics);
 
-		sloc_sfs_makeLangStats(&sloc_sourceFiles);
-		sloc_sfs_qsortLangStats(&sloc_sourceFiles);
+		SlocStat_makeLangStats(&langStatistics);
+		SlocStat_qsortLangStats(&langStatistics);
 
 		printf("Files from %s\n", path);
-		for (size_t i = 0; i < sloc_sourceFiles.n_files; ++i)
+		for (size_t i = 0; i < langStatistics.n_files; ++i)
 		{
-			sloc_sourcefile_t * file = &sloc_sourceFiles.files[i];
+			SlocSourceFileStat_t * file = &langStatistics.files[i];
 			printf("%s [%s]: %zu sloc\n", file->path, file->lang->name, file->sloc);
 		}
 
@@ -81,18 +84,18 @@ int main(int argc, char * argv[])
 		printf("By language:\n");
 		for (size_t i = 0; i < sloc_num_of_languages; ++i)
 		{
-			sloc_langStat_t * langStat = &sloc_sourceFiles.langStats[i];
+			SlocLangStat_t * langStat = &langStatistics.langStats[i];
 			if (langStat->lang == NULL)
 				continue;
 			
-			int percent = (int)(((size_t)10000 * langStat->sloc) / sloc_sourceFiles.slocTotal);
+			int percent = (int)(((size_t)10000 * langStat->sloc) / langStatistics.slocTotal);
 			printf("[%s]: %zu sloc -> %d.%d%%\n", langStat->lang->name, langStat->sloc, percent / 100, percent % 100);
 		}
 
 		putchar('\n');
 
 		// Clear contents
-		sloc_sfs_clear(&sloc_sourceFiles);
+		SlocStat_clear(&langStatistics);
 	}
 
 	return 0;

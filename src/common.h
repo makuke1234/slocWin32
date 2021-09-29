@@ -56,54 +56,55 @@ typedef size_t (*sloc_countLineFunc_t)(const char * code, size_t n_code);
 bool sloc_isWhitespace(const char * code, size_t n_code);
 size_t sloc_countLine(const char * code, size_t n_code);
 
-typedef struct sloc_language
+typedef struct SlocLang
 {
 	const char * name;
 	const char * ext;
 	const sloc_countLineFunc_t fid;
-} sloc_language_t;
+} SlocLang_t;
 
-extern const sloc_language_t sloc_langExtensions[sloc_num_of_languages];
-extern const sloc_language_t sloc_langExtOther;
+extern const SlocLang_t sloc_c_langExtensions[sloc_num_of_languages];
+extern const SlocLang_t sloc_c_langExtOther;
 
 
-const sloc_language_t * sloc_matchLang(const char * fName, size_t n_fName);
+const SlocLang_t * SlocLang_match(const char * fName, size_t n_fName);
 
-size_t sloc_countSloc(const char * fileContents, size_t n_fileContents, const sloc_language_t * lang);
+size_t sloc_countSLOC(const char * fileContents, size_t n_fileContents, const SlocLang_t * lang);
 
-typedef struct sloc_sourcefile
+typedef struct SlocSourceFileStat
 {
-	const sloc_language_t * lang;
+	const SlocLang_t * lang;
 	char * path;
 	size_t sloc;
-} sloc_sourcefile_t;
-int sloc_sourcefile_comp(const void * a, const void * b);
+} SlocSourceFileStat_t;
 
-typedef struct sloc_langStat
+int SlocSourceFileStat_comp(const void * a, const void * b);
+
+
+typedef struct SlocLangStat
 {
-	const sloc_language_t * lang;
+	const SlocLang_t * lang;
 	size_t sloc;
-} sloc_langStat_t;
+} SlocLangStat_t;
 
-int sloc_langStat_comp(const void * a, const void * b);
+int SlocLangStat_comp(const void * a, const void * b);
 
-typedef struct sloc_sfs
+
+typedef struct SlocStatistics
 {
-	sloc_sourcefile_t * files;
+	SlocSourceFileStat_t * files;
 	size_t n_files, cap;
 
-	sloc_langStat_t langStats[sloc_num_of_languages];
+	SlocLangStat_t langStats[sloc_num_of_languages];
 
 	size_t slocTotal;
-} sloc_sfs_t;
+} SlocStat_t;
 
-extern sloc_sfs_t sloc_sourceFiles;
-
-bool sloc_sfs_addFilesFromDir(sloc_sfs_t * files, const char * path);
-bool sloc_sfs_add(sloc_sfs_t * files, sloc_sourcefile_t sourceFile);
-void sloc_sfs_makeLangStats(sloc_sfs_t * files);
-void sloc_sfs_qsortFiles(sloc_sfs_t * files);
-void sloc_sfs_qsortLangStats(sloc_sfs_t * files);
-void sloc_sfs_clear(sloc_sfs_t * files);
+bool SlocStat_addFilesFromDir(SlocStat_t * files, const char * path);
+bool SlocStat_add(SlocStat_t * files, SlocSourceFileStat_t sourceFile);
+void SlocStat_makeLangStats(SlocStat_t * files);
+void SlocStat_qsortFiles(SlocStat_t * files);
+void SlocStat_qsortLangStats(SlocStat_t * files);
+void SlocStat_clear(SlocStat_t * files);
 
 #endif

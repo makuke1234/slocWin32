@@ -1,6 +1,6 @@
 #include "common.h"
 
-static const bool sloc_whitespaceCharacters[256] = {
+static const bool sloc_sc_whitespaceCharacters[256] = {
 	['\t'] = true,
 	['\n'] = true,
 	['\v'] = true,
@@ -12,7 +12,7 @@ bool sloc_isWhitespace(const char * code, size_t n_code)
 {
 	for (size_t i = 0; i < n_code; ++i)
 	{
-		if (!sloc_whitespaceCharacters[(size_t)code[i]])
+		if (!sloc_sc_whitespaceCharacters[(size_t)code[i]])
 			return false;
 	}
 	return true;
@@ -33,7 +33,7 @@ size_t sloc_countLineUntilNotWhitespace(const char * code, size_t n_code)
 {
 	for (size_t i = 0; i < n_code; ++i)
 	{
-		if (!sloc_whitespaceCharacters[(size_t)code[i]])
+		if (!sloc_sc_whitespaceCharacters[(size_t)code[i]])
 			return i;
 	}
 	return n_code;
@@ -410,7 +410,7 @@ static inline size_t sloc_countLine_VBScript(const char * code, size_t n_code)
 }
 
 
-const sloc_language_t sloc_langExtensions[sloc_num_of_languages] = {
+const SlocLang_t sloc_c_langExtensions[sloc_num_of_languages] = {
 	[sloc_Assembly]     = {
 		.name = "Assembly",
 		.ext  = "*.asm;*.S",
@@ -566,7 +566,7 @@ const sloc_language_t sloc_langExtensions[sloc_num_of_languages] = {
 	}
 };
 
-const sloc_language_t sloc_langExtOther = {
+const SlocLang_t sloc_c_langExtOther = {
 	.name = "Other",
 	.ext = "*",
 	.fid = &sloc_countLine
@@ -600,7 +600,7 @@ static inline bool sloc_matchLangIsMatchPattern(const char * fName, size_t n_fNa
 
 	return true;
 }
-static inline bool sloc_matchLangIsMatch(const char * fName, size_t n_fName, const sloc_language_t * lang)
+static inline bool sloc_matchLangIsMatch(const char * fName, size_t n_fName, const SlocLang_t * lang)
 {
 	// Check pattern matching
 	const char * pattern = lang->ext;
@@ -626,19 +626,19 @@ static inline bool sloc_matchLangIsMatch(const char * fName, size_t n_fName, con
 	return false;
 }
 
-const sloc_language_t * sloc_matchLang(const char * fName, size_t n_fName)
+const SlocLang_t * SlocLang_match(const char * fName, size_t n_fName)
 {
 	if (n_fName == 0)
 		n_fName = strlen(fName);
 	for (size_t i = 0; i < sloc_num_of_languages; ++i)
 	{
-		if (sloc_matchLangIsMatch(fName, n_fName, &sloc_langExtensions[i]))
-			return &sloc_langExtensions[i];
+		if (sloc_matchLangIsMatch(fName, n_fName, &sloc_c_langExtensions[i]))
+			return &sloc_c_langExtensions[i];
 	}
-	return &sloc_langExtOther;
+	return &sloc_c_langExtOther;
 }
 
-size_t sloc_countSloc(const char * fileContents, size_t n_fileContents, const sloc_language_t * lang)
+size_t sloc_countSLOC(const char * fileContents, size_t n_fileContents, const SlocLang_t * lang)
 {
 	sloc_countLineFunc_t fid = lang->fid;
 	if (fid == NULL)
@@ -652,20 +652,18 @@ size_t sloc_countSloc(const char * fileContents, size_t n_fileContents, const sl
 	return counter;
 }
 
-int sloc_sourcefile_comp(const void * a, const void * b)
+int SlocSourceFileStat_comp(const void * a, const void * b)
 {
-	const size_t va = ((const sloc_sourcefile_t *)a)->sloc, vb = ((const sloc_sourcefile_t *)b)->sloc;
+	const size_t va = ((const SlocSourceFileStat_t *)a)->sloc, vb = ((const SlocSourceFileStat_t *)b)->sloc;
 	return -1 * (vb < va) + (va < vb);
 }
-int sloc_langStat_comp(const void * a, const void * b)
+int SlocLangStat_comp(const void * a, const void * b)
 {
-	const size_t va = ((const sloc_langStat_t *)a)->sloc, vb = ((const sloc_langStat_t *)b)->sloc;
+	const size_t va = ((const SlocLangStat_t *)a)->sloc, vb = ((const SlocLangStat_t *)b)->sloc;
 	return -1 * (vb < va) + (va < vb);
 }
 
-sloc_sfs_t sloc_sourceFiles;
-
-bool sloc_sfs_addFilesFromDir(sloc_sfs_t * files, const char * path)
+bool SlocStat_addFilesFromDir(SlocStat_t * files, const char * path)
 {
 	WIN32_FIND_DATAA ffd;
 	HANDLE hFind = INVALID_HANDLE_VALUE;
@@ -689,7 +687,7 @@ bool sloc_sfs_addFilesFromDir(sloc_sfs_t * files, const char * path)
 			strcat_s(fullpath, MAX_PATH, "\\");
 			strcat_s(fullpath, MAX_PATH, ffd.cFileName);
 
-			if (!sloc_sfs_add(files, (sloc_sourcefile_t){ .path = strdup(fullpath) }))
+			if (!SlocStat_add(files, (SlocSourceFileStat_t){ .path = strdup(fullpath) }))
 				return false;
 		}
 	} while (FindNextFileA(hFind, &ffd));
@@ -697,11 +695,11 @@ bool sloc_sfs_addFilesFromDir(sloc_sfs_t * files, const char * path)
 
 	return true;
 }
-bool sloc_sfs_add(sloc_sfs_t * files, sloc_sourcefile_t sourceFile)
+bool SlocStat_add(SlocStat_t * files, SlocSourceFileStat_t sourceFile)
 {
 	if (files->cap == 0)
 	{
-		files->files = malloc(1 * sizeof(sloc_sourcefile_t));
+		files->files = malloc(1 * sizeof(SlocSourceFileStat_t));
 		if (files->files == NULL)
 			return false;
 		
@@ -710,11 +708,11 @@ bool sloc_sfs_add(sloc_sfs_t * files, sloc_sourcefile_t sourceFile)
 	else if (files->n_files >= files->cap)
 	{
 		size_t tempcap = files->n_files * (size_t)2;
-		void * mem = malloc(tempcap * sizeof(sloc_sourcefile_t));
+		void * mem = malloc(tempcap * sizeof(SlocSourceFileStat_t));
 		if (mem == NULL)
 			return false;
 
-		memcpy(mem, files->files, files->n_files * sizeof(sloc_sourcefile_t));
+		memcpy(mem, files->files, files->n_files * sizeof(SlocSourceFileStat_t));
 		free(files->files);
 		files->files = mem;
 		files->cap = tempcap;
@@ -724,34 +722,34 @@ bool sloc_sfs_add(sloc_sfs_t * files, sloc_sourcefile_t sourceFile)
 
 	return true;
 }
-void sloc_sfs_makeLangStats(sloc_sfs_t * files)
+void SlocStat_makeLangStats(SlocStat_t * files)
 {
-	memset(files->langStats, 0, sloc_num_of_languages * sizeof(sloc_langStat_t));
+	memset(files->langStats, 0, sloc_num_of_languages * sizeof(SlocLangStat_t));
 
 	files->slocTotal = 0;
 	for (size_t i = 0; i < files->n_files; ++i)
 	{
-		sloc_sourcefile_t * file = &files->files[i];
-		if (file->lang != &sloc_langExtOther)
+		SlocSourceFileStat_t * file = &files->files[i];
+		if (file->lang != &sloc_c_langExtOther)
 		{
-			intptr_t index = file->lang - sloc_langExtensions;
+			intptr_t index = file->lang - sloc_c_langExtensions;
 			if (files->langStats[index].lang == NULL)
-				files->langStats[index].lang = &sloc_langExtensions[index];
+				files->langStats[index].lang = &sloc_c_langExtensions[index];
 
 			files->langStats[index].sloc += file->sloc;
 			files->slocTotal += file->sloc;
 		}
 	}
 }
-void sloc_sfs_qsortFiles(sloc_sfs_t * files)
+void SlocStat_qsortFiles(SlocStat_t * files)
 {
-	qsort(files->files, files->n_files, sizeof(sloc_sourcefile_t), &sloc_sourcefile_comp);
+	qsort(files->files, files->n_files, sizeof(SlocSourceFileStat_t), &SlocSourceFileStat_comp);
 }
-void sloc_sfs_qsortLangStats(sloc_sfs_t * files)
+void SlocStat_qsortLangStats(SlocStat_t * files)
 {
-	qsort(files->langStats, sloc_num_of_languages, sizeof(sloc_langStat_t), &sloc_langStat_comp);
+	qsort(files->langStats, sloc_num_of_languages, sizeof(SlocLangStat_t), &SlocLangStat_comp);
 }
-void sloc_sfs_clear(sloc_sfs_t * files)
+void SlocStat_clear(SlocStat_t * files)
 {
 	for (size_t i = 0; i < files->n_files; ++i)
 	{
