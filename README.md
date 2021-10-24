@@ -14,7 +14,8 @@ The x64 Windows binary can be obtained [here](https://github.com/makuke1234/sloc
 
 # Usage
 
-... soon
+If run with no arguments, prints out statistics for the current directory.
+Folders can be given as independent arguments, information will be shown for all of them.
 
 
 # License
