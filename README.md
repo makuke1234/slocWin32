@@ -9,7 +9,7 @@ language and giving the percentage of code written in that particular language.
 
 # Obtaining
 
-The x64 Windows binary can be obtained [here](https://github.com/makuke1234/slocWin32/releases/tag/Stable).
+The Windows binaries can be obtained [here](https://github.com/makuke1234/slocWin32/releases/tag/Stable).
 
 
 # Usage
