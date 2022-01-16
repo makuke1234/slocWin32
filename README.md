@@ -1,7 +1,7 @@
 # slocWin32
 
-[![Release version](https://img.shields.io/github/v/release/makuke1234/slocwin32?display_name=release&include_prereleases)](https://github.com/makuke1234/slocwin32/releases/latest)
-[![Total downloads](https://img.shields.io/github/downloads/makuke1234/slocwin32/total)]
+[![Release version](https://img.shields.io/github/v/release/makuke1234/slocWin32?display_name=release&include_prereleases)](https://github.com/makuke1234/slocWin32/releases/latest)
+[![Total downloads](https://img.shields.io/github/downloads/makuke1234/slocWin32/total)]
 ![C version](https://img.shields.io/badge/version-C2x-blue.svg)
 
 A fast tool to count the sloc in any folder, categorising all source files by
